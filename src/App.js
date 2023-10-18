@@ -4,7 +4,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import AllUsers from './components/AllUsers';
 import Login from './components/Login';
 import ProfileCreate from './components/ProfileCreate';
-import ProfileFollow from './components/ProfileFollow';
+// import ProfileFollow from './components/ProfileFollow';
 import ProfileSearch from './components/ProfileSearch';
 import UserProfile from './components/UserProfile';
 import UserRegistration from './components/UserRegistration';
