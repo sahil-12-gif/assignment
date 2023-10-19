@@ -38,9 +38,12 @@ function UserProfile() {
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-  const applyFilter = () => {
+  const applyFilter = (e) => {
+    e.preventDefault();
     if (!filter.techStack || !filter.language) {
-      alert("Please fill in all fields of techstack and native language fields");
+      alert(
+        "Please fill in all fields of techstack and native language fields"
+      );
       return;
     }
     console.log(filter.techStack, filter.language);
@@ -67,23 +70,27 @@ function UserProfile() {
       </Link>
       <AllUsersAuth />
       <h2>Filtered User You want</h2>
-      <div>
-        <input
-          required
-          type="text"
-          placeholder="Tech Stack"
-          value={filter.techStack}
-          onChange={(e) => setFilter({ ...filter, techStack: e.target.value })}
-        />
-        <input
-          required
-          type="text"
-          placeholder="Your native language"
-          value={filter.language}
-          onChange={(e) => setFilter({ ...filter, language: e.target.value })}
-        />
-        <button onClick={applyFilter}>Apply Filter</button>
-      </div>
+      <form onSubmit={applyFilter}>
+        <div>
+          <input
+            required
+            type="text"
+            placeholder="Tech Stack"
+            value={filter.techStack}
+            onChange={(e) =>
+              setFilter({ ...filter, techStack: e.target.value })
+            }
+          />
+          <input
+            required
+            type="text"
+            placeholder="Your native language"
+            value={filter.language}
+            onChange={(e) => setFilter({ ...filter, language: e.target.value })}
+          />
+          <button type="submit">Apply Filter</button>
+        </div>
+      </form>
 
       {/* Display paginated users */}
       <ul>
