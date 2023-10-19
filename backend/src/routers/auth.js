@@ -3,6 +3,8 @@ const User = require('../models/user');
 const Profile = require('../models/profile');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
+const secret = process.env.SECRETKEY
 // const auth = require('../middleware/auth'); // Import the auth middleware
 const router = express.Router();
 
@@ -17,10 +19,7 @@ router.post('/user/register', async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        // const newUser = new User({ username, email, password: hashedPassword });
-        // await newUser.save();
 
-        // Create a new dummy profile with empty fields
         const newProfile = new Profile({
             // Link the profile to the newly created user
             name: '',        // You can set these fields as empty or with default values
@@ -35,7 +34,7 @@ router.post('/user/register', async (req, res) => {
         newUser.profile.userId = newUser._id; // Set the userId in the newProfile
         await newUser.save();
         // Generate an authentication token with the user's ID upon successful registration
-        const token = jwt.sign({ _id: newUser._id.toString() }, 'love-babbar');
+        const token = jwt.sign({ _id: newUser._id.toString() }, secret);
         res.header('Authorization', `Bearer ${token}`);
 
         // Exclude the password from the response
@@ -59,7 +58,7 @@ router.post('/user/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid login credentials' });
         }
 
-        const token = jwt.sign({ _id: user._id.toString() }, 'love-babbar'); // Replace with your own secret key
+        const token = jwt.sign({ _id: user._id.toString() }, secret); // Replace with your own secret key
 
         // Set the token in the response headers
         res.header('Authorization', `Bearer ${token}`);
