@@ -9,6 +9,7 @@ const router = express.Router();
 // User Registration
 router.post('/user/register', async (req, res) => {
     const { username, email, password } = req.body;
+
     try {
         const userExists = await User.exists({ $or: [{ username }, { email }] });
         if (userExists) {
@@ -16,13 +17,32 @@ router.post('/user/register', async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ username, email, password: hashedPassword });
-        await newUser.save();
+        // const newUser = new User({ username, email, password: hashedPassword });
+        // await newUser.save();
 
+        // Create a new dummy profile with empty fields
+        const newProfile = new Profile({
+            // Link the profile to the newly created user
+            name: '',        // You can set these fields as empty or with default values
+            techstack: [],
+            bio: '',
+            education: '',
+            experience: '',
+            languages: [],
+        });
+        await newProfile.save();
+        const newUser = new User({ username, email, password: hashedPassword, profile: newProfile._id });
+        newUser.profile.userId = newUser._id; // Set the userId in the newProfile
+        await newUser.save();
         // Generate an authentication token with the user's ID upon successful registration
         const token = jwt.sign({ _id: newUser._id.toString() }, 'love-babbar');
         res.header('Authorization', `Bearer ${token}`);
-        res.status(201).json({ newUser, token });
+
+        // Exclude the password from the response
+        const responseUser = { ...newUser.toObject() };
+        delete responseUser.password;
+
+        res.status(201).json({ newUser: responseUser, token });
     } catch (error) {
         console.error(error);
         res.status(500).send('Server error');

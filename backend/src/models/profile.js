@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const profileSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
   },
   techstack: [
     {
@@ -15,8 +14,16 @@ const profileSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User', // This should match the name of your User model
-    required: true,
+    // required: true,
   },
+  // Additional CV fields
+  education: String, // Educational background
+  experience: String, // Work experience
+  languages: [
+    {
+      type: String,
+    },
+  ],
 });
 
 const Profile = mongoose.model('Profile', profileSchema);

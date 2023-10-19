@@ -7,7 +7,7 @@ const auth = async (req, res, next) => {
     const decoded = jwt.verify(token, 'love-babbar'); // Replace with your own secret key
 
     const user = await User.findOne({ _id: decoded._id });
-    console.log(user, ' In the auth')
+    // console.log(user, ' In the auth')
     if (!user) {
       throw new Error();
     }

@@ -34,7 +34,7 @@ router.post('/user/unfollow/:userId', auth, async (req, res) => {
     const followerId = req.user._id;
 
     try {
-        // Find and delete the follow relationship
+        // Find and de lete the follow relationship
         const deleteResult = await Following.findOneAndDelete({
             userId: followerId,
             followingId: userId,

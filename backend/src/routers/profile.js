@@ -4,18 +4,32 @@ const Profile = require('../models/profile');
 const User = require('../models/user');
 const router = express.Router();
 
-// Creating the new user profile of the authenticated user
+// Creating or updating the user profile of the authenticated user
 router.post('/user/profile', auth, async (req, res) => {
-    const { name, techstack, bio } = req.body;
+    const { name, techstack, bio, education, experience, languages } = req.body;
     try {
         // Get the authenticated user's ID from the request
         const userId = req.user._id;
 
-        // Create a new profile document and save it to the database
-        const newProfile = new Profile({ name, techstack, bio, userId });
-        await newProfile.save();
+        // Check if the user already has a profile
+        let existingProfile = await Profile.findOne({ userId });
 
-        res.status(201).json(newProfile);
+        if (existingProfile) {
+            // If a profile already exists, update it
+            existingProfile.name = name;
+            existingProfile.techstack = techstack;
+            existingProfile.bio = bio;
+            existingProfile.education = education;
+            existingProfile.experience = experience;
+            existingProfile.languages = languages;
+            await existingProfile.save();
+            res.status(200).json(existingProfile);
+        } else {
+            // If no profile exists, create a new one
+            const newProfile = new Profile({ name, techstack, bio, education, experience, languages, userId });
+            await newProfile.save();
+            res.status(201).json(newProfile);
+        }
     } catch (error) {
         console.error(error);
         res.status(500).send('Server error');
@@ -24,27 +38,27 @@ router.post('/user/profile', auth, async (req, res) => {
 
 // http://localhost:3000/user/search-profiles?techstack=Node.js&keyword=web get request
 // Search Profiles Route
-router.get('/user/search-profiles', async (req, res) => {
-    const { techstack, keyword } = req.query;
+// router.get('/user/search-profiles', async (req, res) => {
+//     const { techstack, keyword } = req.query;
 
-    try {
-        let filter = {};
-        if (techstack) {
-            filter.techstack = techstack; // Filter by techstack if provided
-        }
-        if (keyword) {
-            // Use a regular expression to perform a case-insensitive keyword search
-            const keywordRegex = new RegExp(keyword, 'i');
-            filter.$or = [{ name: keywordRegex }, { bio: keywordRegex }];
-        }
-        // Find profiles matching the search criteria
-        const profiles = await Profile.find(filter).exec();
-        res.status(200).json(profiles);
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Server error');
-    }
-});
+//     try {
+//         let filter = {};
+//         if (techstack) {
+//             filter.techstack = techstack; // Filter by techstack if provided
+//         }
+//         if (keyword) {
+//             // Use a regular expression to perform a case-insensitive keyword search
+//             const keywordRegex = new RegExp(keyword, 'i');
+//             filter.$or = [{ name: keywordRegex }, { bio: keywordRegex }];
+//         }
+//         // Find profiles matching the search criteria
+//         const profiles = await Profile.find(filter).exec();
+//         res.status(200).json(profiles);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).send('Server error');
+//     }
+// });
 
 
 // Get user profile by user ID
@@ -52,16 +66,20 @@ router.get('/user/profile/:userId', async (req, res) => {
     try {
         // Get the user ID from the request parameters
         const userId = req.params.userId;
-
+        console.log(userId,' userID');
+        // const ProfileId = req.user.profile;
+        // console.log(ProfileId,' ProfileId')
+        // Find the user's profile using their ID
+        // const userProfile = await Profile.findOne(ProfileId).exec();
         // Find the user by their ID
         const user = await User.findById(userId).exec();
-
+console.log(user,' user')
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
         // Find the user's profile using their ID
-        const userProfile = await Profile.findOne({ userId }).exec();
+        const userProfile = await Profile.findOne( user.profile ).exec();
 
         if (!userProfile) {
             return res.status(404).json({ message: 'User profile not found' });
@@ -83,12 +101,13 @@ router.get('/user/profile/:userId', async (req, res) => {
 router.get('/user/me', auth, async (req, res) => {
     try {
         // Get the authenticated user's ID from the request (provided by the auth middleware)
-        const userId = req.user._id;
-
+        const ProfileId = req.user.profile;
+        // console.log(ProfileId,' ProfileId')
         // Find the user's profile using their ID
-        const userProfile = await Profile.findOne({ userId }).exec();
-
+        const userProfile = await Profile.findOne(ProfileId).exec();
+        console.log(userProfile)
         if (!userProfile) {
+            // cos
             return res.status(404).json({ message: 'User profile not found' });
         }
 
@@ -103,6 +122,69 @@ router.get('/user/me', auth, async (req, res) => {
         res.status(500).send('Server error');
     }
 });
+
+// Update the user's profile by the authenticated user
+router.post('/update-profile/me', auth, async (req, res) => {
+    const { name, techstack, bio, education, experience, languages } = req.body;
+    const ProfileId = req.user.profile;
+    console.log(ProfileId, ' ProfileId')// Get the authenticated user's ID
+
+    try {
+        // Find the user's profile using their user ID
+        const userProfile = await Profile.findOne(ProfileId);
+
+        if (!userProfile) {
+            return res.status(404).json({ message: 'User profile not found' });
+        }
+
+        // Update the user's profile fields
+        userProfile.name = name;
+        userProfile.techstack = techstack;
+        userProfile.bio = bio;
+        userProfile.education = education;
+        userProfile.experience = experience;
+        userProfile.languages = languages;
+
+        // Save the updated profile
+        await userProfile.save();
+
+        // Return the updated profile
+        res.status(200).json(userProfile);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server error');
+    }
+});
+
+// Get profiles with pagination
+// Route to filter users based on techStack and language
+router.get('/user/filter', async (req, res) => {
+    try {
+        const { techStack, language } = req.query;
+
+        // Find all users first and populate their profile field
+        const allUsers = await User.find({}).populate('profile').exec();
+        // console.log(allUsers,' All users')
+        // If no filtering criteria provided, return all users
+        if (!techStack && !language) {
+            return res.status(200).json(allUsers);
+        }
+
+        // Otherwise, filter the users based on tech stack and/or language
+        const filteredUsers = allUsers.filter(user => {
+            const techStackMatch = user.profile.techstack.map(stack => stack == techStack);
+            const languageMatch = user.profile.languages.map(lang => lang == language);
+            // console.log(techStackMatch, languageMatch);
+            return techStackMatch.includes(true) && languageMatch.includes(true);
+        })
+        res.status(200).json(filteredUsers);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server error');
+    }
+});
+
+
 
 
 module.exports = router;

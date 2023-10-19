@@ -1,14 +1,15 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { BrowserRouter as Router } from 'react-router-dom';
-import AllUsers from './components/AllUsers';
-import Login from './components/Login';
-import ProfileCreate from './components/ProfileCreate';
+import Login from './pages/auth/Login';
 // import ProfileFollow from './components/ProfileFollow';
-import ProfileSearch from './components/ProfileSearch';
-import UserProfile from './components/UserProfile';
-import UserRegistration from './components/UserRegistration';
-import ViewProfile from './components/ViewProfile';
+// import ProfileSearch from './pages/ProfileSearch';
+import UserProfile from './pages/user-profile/UserProfile';
+// import UserRegistration from './pages/UserRegistration';
+import ViewProfile from './pages/user-profile/ViewProfile';
+import UpdateProfile from './pages/user-profile/UpdateProfile';
+import AllUsersDetails from './pages/guest/AllUsersDetails';
+import UserRegistration from './pages/auth/UserRegistration';
 
 
 function App() {
@@ -17,7 +18,7 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={<AllUsers />}
+          element={<AllUsersDetails />}
         />
         <Route
           path="/viewprofile/:userId/"
@@ -36,11 +37,10 @@ function App() {
           path="/login-user"
           element={<Login />}
         />
-        <Route
-          path="/create-profile"
-          element={<ProfileCreate />}
+         <Route
+          path="/update-profile"
+          element={<UpdateProfile />}
         />
-        <Route path="/search-profiles" element={<ProfileSearch />} />
         
       </Routes>
 
