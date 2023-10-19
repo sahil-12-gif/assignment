@@ -126,7 +126,7 @@ router.get('/user/me', auth, async (req, res) => {
 // Update the user's profile by the authenticated user
 router.post('/update-profile/me', auth, async (req, res) => {
     const { name, techstack, bio, education, experience, languages } = req.body;
-    console.log(req.body,' REQ.BODY')
+    console.log(req.body, ' REQ.BODY')
     const ProfileId = req.user.profile;
     // console.log(ProfileId, ' ProfileId')// Get the authenticated user's ID
 
@@ -137,15 +137,15 @@ router.post('/update-profile/me', auth, async (req, res) => {
         if (!userProfile) {
             return res.status(404).json({ message: 'User profile not found' });
         }
-        let resultArray=techstack;
-        let language=languages;
-        if(!Array.isArray(techstack)){
+        let resultArray = techstack;
+        let language = languages;
+        if (!Array.isArray(techstack)) {
             console.log(' came inside this part')
-         resultArray = techstack.split(',').map(item => item.toLowerCase());
-        console.log(resultArray,' resultArray')
+            resultArray = techstack.split(',').map(item => item.toLowerCase());
+            console.log(resultArray, ' resultArray')
         }
-        if(!Array.isArray(languages)){
-         language = languages.split(',').map(item => item.toLowerCase());
+        if (!Array.isArray(languages)) {
+            language = languages.split(',').map(item => item.toLowerCase());
         }
         userProfile.name = name;
         userProfile.techstack = resultArray;
@@ -169,26 +169,37 @@ router.post('/update-profile/me', auth, async (req, res) => {
 // Route to filter users based on techStack and language
 router.get('/user/filter', async (req, res) => {
     try {
-        const { techStack, language } = req.query;
+        const { techStack, language, bio } = req.query;
+        console.log(req.query,' req.query')
         const allUsers = await User.find({}).populate('profile').exec();
-        if (!techStack && !language) {
+
+        if (!techStack && !language && !bio) {
             return res.status(200).json(allUsers);
         }
-console.log(allUsers,' all users')
-        // Otherwise, filter the users based on tech stack and/or language
+
         const filteredUsers = allUsers.filter(user => {
-            const hasTechStack = techStack ? user.profile.techstack.includes(techStack) : true;
-            const hasLanguage = language ? user.profile.languages.includes(language) : true;
-            console.log(hasTechStack)
-            console.log(hasLanguage)
-            return hasTechStack && hasLanguage;
+            const techStackMatch = techStack
+                ? user.profile.techstack.includes(techStack)
+                : true;
+
+            const languageMatch = language
+                ? user.profile.languages.includes(language)
+                : true;
+            console.log(bio,' BIO')
+            const bioMatch = bio
+                ? user.profile.bio.toLowerCase().includes(bio.toLowerCase())
+                : true;
+            console.log(techStackMatch, languageMatch, bioMatch)
+            return techStackMatch && languageMatch && bioMatch;
         });
+
         res.status(200).json(filteredUsers);
     } catch (error) {
         console.error(error);
         res.status(500).send('Server error');
     }
 });
+
 
 
 

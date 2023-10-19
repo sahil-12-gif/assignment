@@ -12,6 +12,7 @@ function UserProfile() {
   const [filter, setFilter] = useState({
     techStack: "",
     language: "",
+    bio: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 3; // Number of users to show per page
@@ -40,17 +41,17 @@ function UserProfile() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
   const applyFilter = (e) => {
     e.preventDefault();
-    if (!filter.techStack || !filter.language) {
+    if (!filter.techStack || !filter.language || !filter.bio) {
       alert(
         "Please fill in all fields of techstack and native language fields"
       );
       return;
     }
-    console.log(filter.techStack, filter.language);
+    console.log(filter.techStack, filter.language, filter.bio);
     // Make an API call to filter users based on the criteria
     axios
       .get(
-        `http://localhost:3000/user/filter?techStack=${filter.techStack}&language=${filter.language}`
+        `http://localhost:3000/user/filter?techStack=${filter.techStack}&language=${filter.language}&bio=${filter.bio}`
       )
       .then((response) => {
         setFilteredUsers(response.data);
@@ -69,7 +70,7 @@ function UserProfile() {
         Update Your Profile
       </Link>
       <AllUsersAuth />
-      <h2>Filtered User You want</h2>
+      <h3>Filter the users on the basis of theit techstack language and bio and all the three fields are required</h3>
       <form onSubmit={applyFilter}>
         <div>
           <input
@@ -87,6 +88,13 @@ function UserProfile() {
             placeholder="Your native language"
             value={filter.language}
             onChange={(e) => setFilter({ ...filter, language: e.target.value })}
+          />
+          <input
+            required
+            type="text"
+            placeholder="Bio"
+            value={filter.bio}
+            onChange={(e) => setFilter({ ...filter, bio: e.target.value })}
           />
           <button type="submit">Apply Filter</button>
         </div>
