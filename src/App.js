@@ -37,11 +37,11 @@ function App() {
           path="/login-user"
           element={<Login />}
         />
-         <Route
+        <Route
           path="/update-profile"
           element={<UpdateProfile />}
         />
-        
+
       </Routes>
 
     </Router>
