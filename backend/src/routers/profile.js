@@ -66,20 +66,20 @@ router.get('/user/profile/:userId', async (req, res) => {
     try {
         // Get the user ID from the request parameters
         const userId = req.params.userId;
-        console.log(userId,' userID');
+        console.log(userId, ' userID');
         // const ProfileId = req.user.profile;
         // console.log(ProfileId,' ProfileId')
         // Find the user's profile using their ID
         // const userProfile = await Profile.findOne(ProfileId).exec();
         // Find the user by their ID
         const user = await User.findById(userId).exec();
-console.log(user,' user')
+        console.log(user, ' user')
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
         // Find the user's profile using their ID
-        const userProfile = await Profile.findOne( user.profile ).exec();
+        const userProfile = await Profile.findOne(user.profile).exec();
 
         if (!userProfile) {
             return res.status(404).json({ message: 'User profile not found' });
@@ -126,8 +126,9 @@ router.get('/user/me', auth, async (req, res) => {
 // Update the user's profile by the authenticated user
 router.post('/update-profile/me', auth, async (req, res) => {
     const { name, techstack, bio, education, experience, languages } = req.body;
+    console.log(req.body,' REQ.BODY')
     const ProfileId = req.user.profile;
-    console.log(ProfileId, ' ProfileId')// Get the authenticated user's ID
+    // console.log(ProfileId, ' ProfileId')// Get the authenticated user's ID
 
     try {
         // Find the user's profile using their user ID
@@ -136,14 +137,22 @@ router.post('/update-profile/me', auth, async (req, res) => {
         if (!userProfile) {
             return res.status(404).json({ message: 'User profile not found' });
         }
-
-        // Update the user's profile fields
+        let resultArray=techstack;
+        let language=languages;
+        if(!Array.isArray(techstack)){
+            console.log(' came inside this part')
+         resultArray = techstack.split(',').map(item => item.toLowerCase());
+        console.log(resultArray,' resultArray')
+        }
+        if(!Array.isArray(languages)){
+         language = languages.split(',').map(item => item.toLowerCase());
+        }
         userProfile.name = name;
-        userProfile.techstack = techstack;
+        userProfile.techstack = resultArray;
         userProfile.bio = bio;
         userProfile.education = education;
         userProfile.experience = experience;
-        userProfile.languages = languages;
+        userProfile.languages = language;
 
         // Save the updated profile
         await userProfile.save();
@@ -161,22 +170,19 @@ router.post('/update-profile/me', auth, async (req, res) => {
 router.get('/user/filter', async (req, res) => {
     try {
         const { techStack, language } = req.query;
-
-        // Find all users first and populate their profile field
         const allUsers = await User.find({}).populate('profile').exec();
-        // console.log(allUsers,' All users')
-        // If no filtering criteria provided, return all users
         if (!techStack && !language) {
             return res.status(200).json(allUsers);
         }
-
+console.log(allUsers,' all users')
         // Otherwise, filter the users based on tech stack and/or language
         const filteredUsers = allUsers.filter(user => {
-            const techStackMatch = user.profile.techstack.map(stack => stack == techStack);
-            const languageMatch = user.profile.languages.map(lang => lang == language);
-            // console.log(techStackMatch, languageMatch);
-            return techStackMatch.includes(true) && languageMatch.includes(true);
-        })
+            const hasTechStack = techStack ? user.profile.techstack.includes(techStack) : true;
+            const hasLanguage = language ? user.profile.languages.includes(language) : true;
+            console.log(hasTechStack)
+            console.log(hasLanguage)
+            return hasTechStack && hasLanguage;
+        });
         res.status(200).json(filteredUsers);
     } catch (error) {
         console.error(error);

@@ -5,7 +5,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const secret = process.env.SECRETKEY
-// const auth = require('../middleware/auth'); // Import the auth middleware
 const router = express.Router();
 
 // User Registration
